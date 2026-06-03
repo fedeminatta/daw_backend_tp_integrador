@@ -16,22 +16,25 @@ export class ClientesService {
     private readonly clienteRepository: Repository<Cliente>,
   ) {}
 
-  async create(createClienteDto: CreateClienteDto): Promise<Cliente> {
-    try {
-      const nuevoCliente = this.clienteRepository.create(createClienteDto);
-      return await this.clienteRepository.save(nuevoCliente);
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException('Error al crear el cliente');
-    }
+  async create(createClienteDto: CreateClienteDto) {
+    const nuevoCliente = this.clienteRepository.create({
+      nombre: createClienteDto.nombre,
+      estado: ClienteEstado.ACTIVO,
+    });
+    return await this.clienteRepository.save(nuevoCliente);
   }
 
-  async findAll(): Promise<Cliente[]> {
-    return await this.clienteRepository.find();
+  async findAll() {
+    return await this.clienteRepository.find({
+      relations: ['proyectos'],
+    });
   }
 
-  async findOne(id: string): Promise<Cliente> {
-    const cliente = await this.clienteRepository.findOne({ where: { id } });
+  async findOne(id: string) {
+    const cliente = await this.clienteRepository.findOne({
+      where: { id },
+      relations: ['proyectos'],
+    });
     if (!cliente) {
       throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
     }
@@ -54,21 +57,20 @@ export class ClientesService {
   }
 
   async darDeBaja(id: string): Promise<Cliente> {
-    //Se carga el cliente con su relacion de proyectos para validar la regla del negocio
     const cliente = await this.clienteRepository.findOne({
       where: { id },
       relations: ['proyectos'],
     });
 
     if (!cliente) {
-      throw new NotFoundException('Cliente con ID ${id} no encontrado');
+      throw new NotFoundException(`Cliente con ID ${id} no encontrado`);
     }
 
-    if ((cliente.estado as ClienteEstado) === ClienteEstado.BAJA) {
+    if (cliente.estado === ClienteEstado.BAJA) {
       throw new BadRequestException('El cliente ya se encuentra dado de baja');
     }
 
-    //Solo se puede dar de baja si no se encuentra registrado en ningun proyecto
+    // Validar regla de negocio antes de la baja logica
     if (cliente.proyectos && cliente.proyectos.length > 0) {
       throw new BadRequestException(
         'No se puede dar de baja el cliente porque tiene proyectos asociados',
