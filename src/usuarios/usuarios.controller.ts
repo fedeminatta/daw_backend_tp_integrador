@@ -17,10 +17,11 @@ export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Post('login')
-  login(@Body() loginUsuarioDto: LoginUsuarioDto) {
+  async login(@Body() loginUsuarioDto: LoginUsuarioDto) {
+    const resultado = await this.usuariosService.login(loginUsuarioDto);
     return {
       message: 'Intentando iniciar sesión',
-      data: this.usuariosService.login(loginUsuarioDto),
+      data: resultado,
     };
   }
 
