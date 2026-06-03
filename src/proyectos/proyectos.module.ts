@@ -1,20 +1,14 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProyectosService } from './proyectos.service';
 import { ProyectosController } from './proyectos.controller';
-import { Proyecto } from './entities/proyecto.entity';
-<<<<<<< HEAD
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Proyecto } from './entities/proyecto.entity';
+import { ClientesModule } from '../clientes/clientes.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Proyecto])],
-=======
-import { Cliente } from '../clientes/entities/cliente.entity';
-
-@Module({
-  imports: [TypeOrmModule.forFeature([Proyecto, Cliente])],
->>>>>>> 57c2d112a50767aef4959b6b5aac610bfe19f530
+  imports: [TypeOrmModule.forFeature([Proyecto]), ClientesModule], // Asegurate de que tenga esto
   controllers: [ProyectosController],
   providers: [ProyectosService],
+  exports: [TypeOrmModule],
 })
 export class ProyectosModule {}
