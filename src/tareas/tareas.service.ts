@@ -1,26 +1,102 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Tarea } from './entities/tarea.entity';
+import { Proyecto } from '../proyectos/entities/proyecto.entity';
 import { CreateTareaDto } from './dto/create-tarea.dto';
 import { UpdateTareaDto } from './dto/update-tarea.dto';
 
 @Injectable()
 export class TareasService {
-  create(createTareaDto: CreateTareaDto) {
-    return 'This action adds a new tarea';
+  constructor(
+    @InjectRepository(Tarea)
+    private readonly tareaRepository: Repository<Tarea>,
+    @InjectRepository(Proyecto)
+    private readonly proyectoRepository: Repository<Proyecto>,
+  ) {}
+
+  async create(createTareaDto: CreateTareaDto): Promise<Tarea> {
+    const { proyectoId, descripcion } = createTareaDto;
+
+    //La tarea debe pertenecer a un proyecto ya creado
+    const proyecto = await this.proyectoRepository.findOne({
+      where: { id: proyectoId },
+    });
+
+    if (!proyecto) {
+      throw new NotFoundException(`
+        Proyecto con ID ${proyectoId} no encontrado`);
+    }
+
+    const nuevaTarea = this.tareaRepository.create({
+      descripcion,
+      proyecto,
+    });
+
+    try {
+      return await this.tareaRepository.save(nuevaTarea);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Errro al crear la tarea');
+    }
   }
 
-  findAll() {
-    return `This action returns all tareas`;
+  async findAll(): Promise<Tarea[]> {
+    return await this.tareaRepository.find({ relations: ['proyecto'] });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tarea`;
+  async findOne(id: string): Promise<Tarea> {
+    const tarea = await this.tareaRepository.findOne({
+      where: { id },
+      relations: ['proyecto'],
+    });
+
+    if (!tarea) {
+      throw new NotFoundException(`Tarea con ID ${id} no encontrada`);
+    }
+    return tarea;
   }
 
-  update(id: number, updateTareaDto: UpdateTareaDto) {
-    return `This action updates a #${id} tarea`;
+  async update(id: string, updateTareaDto: UpdateTareaDto): Promise<Tarea> {
+    const tarea = await this.findOne(id);
+    const { proyectoId, descripcion, estado } = updateTareaDto;
+
+    if (descripcion) tarea.descripcion = descripcion;
+    if (estado) tarea.estado = estado;
+
+    //Si se envia un nuevo proyectoId se tiene que verificar que veriicar que exista antes de reasignar
+    if (proyectoId) {
+      const proyecto = await this.proyectoRepository.findOne({
+        where: { id: proyectoId },
+      });
+      if (!proyecto) {
+        throw new NotFoundException(`
+          Proyecto con ID ${proyectoId} no encontrado`);
+      }
+      tarea.proyecto = proyecto;
+    }
+
+    try {
+      return await this.tareaRepository.save(tarea);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al actualizar la tarea');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} tarea`;
+  //Eliminacion de tareas
+
+  async remove(id: string): Promise<void> {
+    const tarea = await this.findOne(id);
+    try {
+      await this.tareaRepository.remove(tarea);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al eliminar la tarea');
+    }
   }
 }
