@@ -38,7 +38,7 @@ import { TareasModule } from './tareas/tareas.module';
           database,
           autoLoadEntities: true,
           synchronize: configService.get<string>('NODE_ENV') !== 'production',
-          dropSchema: true,
+          // dropSchema: true,
         };
       },
     }),
