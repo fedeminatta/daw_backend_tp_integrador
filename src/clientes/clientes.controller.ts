@@ -15,30 +15,30 @@ export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
 
   @Post()
-  create(@Body() createClienteDto: CreateClienteDto) {
-    return this.clientesService.create(createClienteDto);
+  async create(@Body() createClienteDto: CreateClienteDto) {
+    return await this.clientesService.create(createClienteDto);
   }
 
   @Get()
-  findAll() {
-    return this.clientesService.findAll();
+  async findAll() {
+    return await this.clientesService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.clientesService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.clientesService.findOne(id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateClienteDto: Partial<CreateClienteDto>,
   ) {
-    return this.clientesService.update(id, updateClienteDto);
+    return await this.clientesService.update(id, updateClienteDto);
   }
 
   @Patch(':id/baja')
-  darDeBaja(@Param('id', ParseUUIDPipe) id: string) {
-    return this.clientesService.darDeBaja(id);
+  async darDeBaja(@Param('id', ParseUUIDPipe) id: string) {
+    return await this.clientesService.darDeBaja(id);
   }
 }
