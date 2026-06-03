@@ -10,10 +10,19 @@ import {
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
+import { LoginUsuarioDto } from './dto/login-usuario-dto';
 
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
+
+  @Post('login')
+  login(@Body() loginUsuarioDto: LoginUsuarioDto) {
+    return {
+      message: 'Intentando iniciar sesión',
+      data: this.usuariosService.login(loginUsuarioDto),
+    };
+  }
 
   @Post()
   create(@Body() createUsuarioDto: CreateUsuarioDto) {
