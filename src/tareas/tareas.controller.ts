@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { TareasService } from './tareas.service';
 import { CreateTareaDto } from './dto/create-tarea.dto';
 import { UpdateTareaDto } from './dto/update-tarea.dto';
@@ -18,17 +27,20 @@ export class TareasController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tareasService.findOne(+id);
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
+    return this.tareasService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTareaDto: UpdateTareaDto) {
-    return this.tareasService.update(+id, updateTareaDto);
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateTareaDto: UpdateTareaDto,
+  ) {
+    return this.tareasService.update(id, updateTareaDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tareasService.remove(+id);
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.tareasService.remove(id);
   }
 }
