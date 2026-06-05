@@ -20,5 +20,6 @@ import { Usuario } from './entities/usuario.entity';
   ],
   controllers: [UsuariosController],
   providers: [UsuariosService],
+  exports: [UsuariosService, JwtModule],
 })
 export class UsuariosModule {}

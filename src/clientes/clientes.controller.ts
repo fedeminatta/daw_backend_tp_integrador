@@ -6,11 +6,14 @@ import {
   Patch,
   Param,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientesService } from './clientes.service';
 import { CreateClienteDto } from './dto/create-cliente.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('clientes')
+@UseGuards(JwtAuthGuard)
 export class ClientesController {
   constructor(private readonly clientesService: ClientesService) {}
 
