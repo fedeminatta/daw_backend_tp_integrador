@@ -1,6 +1,6 @@
 ## 1. MÓDULO: Usuarios (Completado)
 
-Encargado de la autenticacion y el control de acceso.
+Encargado de la autenticacion y la gestion de operadores del sistema.
 
 - **Entidad (Usuario):**
   - `id` (UUID, Primary)
@@ -9,14 +9,19 @@ Encargado de la autenticacion y el control de acceso.
   - `estado` (Enum: 'Activo', 'Baja')
 
 - **Consultas / Rutas:**
-  - `POST /usuarios/login` -> Recibe DTO con usuario y clave. Valida contra la base de datos y retorna un JWT firmado si las credenciales son validas.
-  - `onModuleInit` -> Verificar si la tabla de usuarios esta vacia al arrancar. Si esta vacia, crear el usuario 'admin' con clave encriptada de forma automatica.
+  - `POST /usuarios/login` -> Recibe DTO con usuario/clave. Retorna JWT. (Público)
+  - `POST /usuarios` -> Crear un nuevo usuario operador con clave encriptada. (Protegido)
+  - `GET /usuarios` -> Listar usuarios sin exponer sus hashes de clave. (Protegido)
+  - `GET /usuarios/:id` -> Obtener un usuario por ID. (Protegido)
+  - `PATCH /usuarios/:id` -> Actualizar datos o re-encriptar nueva clave. (Protegido)
+  - `DELETE /usuarios/:id` -> Cambiar estado a 'Baja'. Restricción: No se puede aplicar al usuario 'admin'. (Protegido)
+  - `onModuleInit` -> Inicializador automatico del usuario 'admin' si la base de datos esta vacia.
 
 ---
 
 ## 2. MÓDULO: Clientes (Completado)
 
-Estructura para la gestion de clientes externos.
+Estructura para la gestion de clientes externos asociados a proyectos.
 
 - **Entidad (Cliente):**
   - `id` (UUID, Primary)
@@ -24,15 +29,12 @@ Estructura para la gestion de clientes externos.
   - `estado` (Enum: 'Activo', 'Baja')
   - Relacion: `@OneToMany` hacia Proyecto.
 
-- **Consultas / Rutas:**
-  - `POST /clientes` -> Crear cliente (nace en estado 'Activo').
-  - `GET /clientes` -> Listar todos los clientes incluyendo la relacion 'proyectos'.
+- **Consultas / Rutas:** (Todos los endpoints protegidos con JwtAuthGuard)
+  - `POST /clientes` -> Crear cliente (Estado inicial: 'Activo').
+  - `GET /clientes` -> Listar clientes e incluir relacion 'proyectos'.
   - `GET /clientes/:id` -> Buscar cliente por ID.
-  - `PATCH /clientes/:id` -> Modificar datos basicos.
-  - `PATCH /clientes/:id/baja` -> Logica de baja: Cambiar estado a 'Baja'.
-    - **Regla de negocio:** Validar que el array de proyectos asociados este vacio. Si tiene proyectos, lanzar BadRequestException.
-
----
+  - `PATCH /clientes/:id` -> Modificar nombre del cliente.
+  - `PATCH /clientes/:id/baja` -> Cambiar estado a 'Baja'. Restricción: Lanza BadRequestException si el cliente posee proyectos asignados.
 
 ## 3. MÓDULO: Proyectos (Siguiente Paso)
 
