@@ -7,12 +7,15 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { TareasService } from './tareas.service';
 import { CreateTareaDto } from './dto/create-tarea.dto';
 import { UpdateTareaDto } from './dto/update-tarea.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('tareas')
+@UseGuards(JwtAuthGuard)
 export class TareasController {
   constructor(private readonly tareasService: TareasService) {}
 

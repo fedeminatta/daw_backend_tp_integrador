@@ -4,9 +4,10 @@ import { TareasController } from './tareas.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tarea } from './entities/tarea.entity';
 import { ProyectosModule } from '../proyectos/proyectos.module';
+import { UsuariosModule } from '../usuarios/usuarios.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tarea]), ProyectosModule], // Asegurate de que tenga esto
+  imports: [TypeOrmModule.forFeature([Tarea]), ProyectosModule, UsuariosModule], // Asegurate de que tenga esto
   controllers: [TareasController],
   providers: [TareasService],
   exports: [TareasService, TypeOrmModule],
