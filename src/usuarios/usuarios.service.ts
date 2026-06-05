@@ -2,6 +2,9 @@ import {
   Injectable,
   OnModuleInit,
   UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -30,7 +33,6 @@ export class UsuariosService implements OnModuleInit {
     if (cantidadUsuarios === 0) {
       console.log('No se encontraron usuarios. Creando usuario por defecto...');
 
-      // Encriptar la clave antes de guardarla
       const salt = await bcrypt.genSalt(10);
       const claveEncriptada = await bcrypt.hash('admin123', salt);
 
@@ -65,37 +67,123 @@ export class UsuariosService implements OnModuleInit {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    // Datos que viajan dentro del token JWT
     const payload = {
       sub: usuario.id,
       nombreUsuario: usuario.nombreUsuario,
     };
 
-    // Retornar el token generado junto con los datos basicos del usuario
     return {
       id: usuario.id,
       nombreUsuario: usuario.nombreUsuario,
-      token: this.jwtService.sign(payload), // Generar hash JWT
+      token: this.jwtService.sign(payload),
     };
   }
 
-  create(createUsuarioDto: CreateUsuarioDto) {
-    return 'This action adds a new usuario';
+  // Crear nuevo usuario con clave encriptada
+  async create(createUsuarioDto: CreateUsuarioDto) {
+    const { nombreUsuario, clave } = createUsuarioDto;
+
+    const existe = await this.usuarioRepository.findOne({
+      where: { nombreUsuario },
+    });
+    if (existe) {
+      throw new BadRequestException('El nombre de usuario ya existe');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const claveEncriptada = await bcrypt.hash(clave, salt);
+
+    const nuevoUsuario = this.usuarioRepository.create({
+      nombreUsuario,
+      clave: claveEncriptada,
+      estado: UsuarioEstado.ACTIVO,
+    });
+
+    try {
+      const guardado = await this.usuarioRepository.save(nuevoUsuario);
+      return {
+        id: guardado.id,
+        nombreUsuario: guardado.nombreUsuario,
+        estado: guardado.estado,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al crear el usuario');
+    }
   }
 
-  findAll() {
-    return `This action returns all usuarios`;
+  // Listar todos los usuarios
+  async findAll() {
+    return await this.usuarioRepository.find({
+      select: ['id', 'nombreUsuario', 'estado'], // Excluir las claves por seguridad
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} usuario`;
+  // Buscar un usuario por su ID
+  async findOne(id: string) {
+    const usuario = await this.usuarioRepository.findOne({
+      where: { id },
+      select: ['id', 'nombreUsuario', 'estado'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+    return usuario;
   }
 
-  update(id: number, updateUsuarioDto: UpdateUsuarioDto) {
-    return `This action updates a #${id} usuario`;
+  // Actualizar nombre de usuario o clave
+  async update(id: string, updateUsuarioDto: UpdateUsuarioDto) {
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    if (updateUsuarioDto.nombreUsuario) {
+      usuario.nombreUsuario = updateUsuarioDto.nombreUsuario;
+    }
+
+    if (updateUsuarioDto.clave) {
+      const salt = await bcrypt.genSalt(10);
+      usuario.clave = await bcrypt.hash(updateUsuarioDto.clave, salt);
+    }
+
+    try {
+      const actualizado = await this.usuarioRepository.save(usuario);
+      return {
+        id: actualizado.id,
+        nombreUsuario: actualizado.nombreUsuario,
+        estado: actualizado.estado,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al actualizar el usuario');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} usuario`;
+  // Baja logica de usuario
+  async remove(id: string) {
+    const usuario = await this.usuarioRepository.findOne({ where: { id } });
+    if (!usuario) {
+      throw new NotFoundException(`Usuario con ID ${id} no encontrado`);
+    }
+
+    if (usuario.nombreUsuario === 'admin') {
+      throw new BadRequestException(
+        'No se puede dar de baja al usuario administrador por defecto',
+      );
+    }
+
+    usuario.estado = UsuarioEstado.BAJA;
+
+    try {
+      await this.usuarioRepository.save(usuario);
+      return {
+        message: `Usuario ${usuario.nombreUsuario} dado de baja correctamente`,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException('Error al dar de baja al usuario');
+    }
   }
 }
