@@ -10,12 +10,14 @@ import { LoginUsuarioDto } from './dto/login-usuario-dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUsuarioDto } from './dto/update-usuario.dto';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsuariosService implements OnModuleInit {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async onModuleInit() {
@@ -48,30 +50,32 @@ export class UsuariosService implements OnModuleInit {
   async login(loginDto: LoginUsuarioDto) {
     const { nombreUsuario, clave } = loginDto;
 
-    // 1. Buscar usuario por su nombre y que estr ACTIVO
     const usuario = await this.usuarioRepository.findOne({
       where: { nombreUsuario, estado: UsuarioEstado.ACTIVO },
     });
 
-    // 2. Si no existe dar error de no autorizado
     if (!usuario) {
       throw new UnauthorizedException(
         'Credenciales incorrectas o usuario inactivo',
       );
     }
 
-    // 3. Comparar la clave que viene del front con el hash de la BD
     const claveValida = await bcrypt.compare(clave, usuario.clave);
-
     if (!claveValida) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
+    // Datos que viajan dentro del token JWT
+    const payload = {
+      sub: usuario.id,
+      nombreUsuario: usuario.nombreUsuario,
+    };
+
+    // Retornar el token generado junto con los datos basicos del usuario
     return {
       id: usuario.id,
       nombreUsuario: usuario.nombreUsuario,
-      estado: usuario.estado,
-      mensaje: 'Login exitoso',
+      token: this.jwtService.sign(payload), // Generar hash JWT
     };
   }
 
