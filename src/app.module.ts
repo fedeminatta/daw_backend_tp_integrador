@@ -7,6 +7,7 @@ import { UsuariosModule } from './usuarios/usuarios.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ProyectosModule } from './proyectos/proyectos.module';
 import { TareasModule } from './tareas/tareas.module';
+import { DashboradModule } from './dashboard/dashborad.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { TareasModule } from './tareas/tareas.module';
     ClientesModule,
     ProyectosModule,
     TareasModule,
+    DashboradModule,
   ],
   controllers: [AppController],
   providers: [AppService],
