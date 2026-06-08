@@ -14,6 +14,14 @@ export class Cliente {
   @Column({ type: 'varchar', length: 150 })
   nombre!: string;
 
+  // 🚀 TUS NUEVOS CAMPOS AQUÍ:
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  email!: string;
+
+  @Column({ type: 'varchar', length: 30, nullable: true })
+  telefono!: string;
+  // -------------------------
+
   @Column({ type: 'enum', enum: ClienteEstado, default: ClienteEstado.ACTIVO })
   estado!: ClienteEstado;
 

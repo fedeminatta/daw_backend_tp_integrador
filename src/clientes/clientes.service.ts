@@ -18,7 +18,7 @@ export class ClientesService {
 
   async create(createClienteDto: CreateClienteDto) {
     const nuevoCliente = this.clienteRepository.create({
-      nombre: createClienteDto.nombre,
+      ...createClienteDto,  
       estado: ClienteEstado.ACTIVO,
     });
     return await this.clienteRepository.save(nuevoCliente);
