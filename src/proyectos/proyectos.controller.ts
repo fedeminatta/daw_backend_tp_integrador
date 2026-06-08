@@ -29,7 +29,7 @@ export class ProyectosController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.proyectosService.findOne(id);
   }
 
