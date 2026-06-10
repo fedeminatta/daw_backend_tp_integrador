@@ -12,6 +12,13 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  app.enableCors({
+    origin: 'http://localhost:4200', // URL de frontend de Angular
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Proyecto Integrador - Gestor de Proyectos')
     .setDescription(

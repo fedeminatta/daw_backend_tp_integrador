@@ -21,11 +21,7 @@ export class UsuariosController {
 
   @Post('login')
   async login(@Body() loginUsuarioDto: LoginUsuarioDto) {
-    const resultado = await this.usuariosService.login(loginUsuarioDto);
-    return {
-      message: 'Intentando iniciar sesión',
-      data: resultado,
-    };
+    return await this.usuariosService.login(loginUsuarioDto);
   }
 
   @Post()
