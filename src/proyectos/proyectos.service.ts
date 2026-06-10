@@ -36,7 +36,7 @@ export class ProyectosService {
           `Cliente con ID ${clienteId} no encontrado`,
         );
       }
-      if ((cliente.estado as ClienteEstado) !== ClienteEstado.ACTIVO) {
+      if (cliente.estado !== ClienteEstado.ACTIVO) {
         throw new BadRequestException(
           'Solo se puede asignar un cliente si su estado es "Activo"',
         );
@@ -124,5 +124,16 @@ export class ProyectosService {
         'Error al dar de baja el proyecto',
       );
     }
+  }
+
+  async remove(id: string) {
+    const proyecto = await this.proyectoRepository.findOne({ where: { id } });
+
+    if (!proyecto) {
+      throw new NotFoundException(`Proyecto con ID ${id} no encontrado`);
+    }
+
+    // Retornar la eliminacion
+    return await this.proyectoRepository.remove(proyecto);
   }
 }

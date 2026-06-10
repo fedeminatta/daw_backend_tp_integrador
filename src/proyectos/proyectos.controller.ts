@@ -7,6 +7,7 @@ import {
   Param,
   ParseUUIDPipe,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { ProyectosService } from './proyectos.service';
 import { CreateProyectoDto } from './dto/create-proyecto.dto';
@@ -44,5 +45,10 @@ export class ProyectosController {
   @Patch(':id/baja')
   darDeBaja(@Param('id', ParseUUIDPipe) id: string) {
     return this.proyectosService.darDeBaja(id);
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return await this.proyectosService.remove(id);
   }
 }
