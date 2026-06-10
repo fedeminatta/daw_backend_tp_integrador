@@ -91,7 +91,7 @@ export class ProyectosService {
             `Cliente con ID ${clienteId} no encontrado`,
           );
         }
-        if ((cliente.estado as ClienteEstado) !== ClienteEstado.ACTIVO) {
+        if (cliente.estado !== ClienteEstado.ACTIVO) {
           throw new BadRequestException(
             'Solo se puede asignar un cliente si su esrado es "Activo"',
           );
