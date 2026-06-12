@@ -93,7 +93,7 @@ export class ProyectosService {
         }
         if (cliente.estado !== ClienteEstado.ACTIVO) {
           throw new BadRequestException(
-            'Solo se puede asignar un cliente si su esrado es "Activo"',
+            'Solo se puede asignar un cliente si su estado es "Activo"',
           );
         }
         proyecto.cliente = cliente;
