@@ -2,9 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+import helmet  from 'helmet'; 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.use(helmet());
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -29,7 +33,12 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // Definir la ruta de la documentacion
+
+  if (process.env.NODE_ENV !== 'production'){
+    SwaggerModule.setup('docs', app, document); // Definir la ruta de la documentacion
+    console.log(`Documentacion disponible en  http://localhost:3000/docs`);
+  }
+  
 
   await app.listen(process.env.PORT ?? 3000);
   console.log(`🚀 Servidor corriendo en: http://localhost:3000`);
